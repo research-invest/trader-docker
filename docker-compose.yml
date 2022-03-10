@@ -1,0 +1,63 @@
+version: '3'
+services:
+  trader-nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./images/nginx:/etc/nginx/conf.d
+      - ../trader-site:/var/www/app
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - trader-site
+      - trader-postgres
+    ports:
+      - "84:80"
+    networks:
+      - trader
+
+  trader-site:
+    build: ./images/php
+    restart: always
+    container_name: trader-site
+    depends_on:
+      - trader-postgres
+    volumes:
+      - ../trader-site:/var/www/app
+      - ./images/php/custom_php.ini:/usr/local/etc/php/conf.d/custom_php.ini
+    networks:
+      - trader
+
+  trader-postgres:
+    image: postgres:12.5-alpine
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: HCK6LrwUsVu63ZdF
+      POSTGRES_DB: trader_db
+    expose:
+      - "5436"
+    ports:
+      - "5436:5436" # HOST:CONTAINER
+    command: -p 5436
+    networks:
+      - trader
+
+#  trader-go:
+#    build:
+#      context: ../
+#      dockerfile: ./go-trader/docker/Dockerfile
+#    volumes:
+#      - ./logs/go-trader:/opt/app/logs
+#    ports:
+#      - "5244:5244"
+#    networks:
+#      - trader
+
+  trader-adminer:
+    image: adminer
+    ports:
+      - "8338:8080"
+    networks:
+      - trader
+
+networks:
+  trader:
