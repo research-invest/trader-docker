@@ -19,6 +19,14 @@ RUN apt-get update && apt-get install -y \
     docker-php-ext-enable pdo_pgsql && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# install php-redis
+RUN pecl install -o -f redis \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
+
+# Install Trader PHP Extension
+RUN pecl install trader && docker-php-ext-enable trader
+
 WORKDIR /var/www/app
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

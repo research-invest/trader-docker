@@ -2,7 +2,6 @@ version: '3'
 services:
   trader-nginx:
     image: nginx:latest
-    restart: always
     volumes:
       - ./images/nginx:/etc/nginx/conf.d
       - ../trader-site:/var/www/app
@@ -17,7 +16,6 @@ services:
 
   trader-site:
     build: ./images/php
-    restart: always
     container_name: trader-site
     depends_on:
       - trader-postgres
@@ -28,7 +26,7 @@ services:
       - trader
 
   trader-postgres:
-    image: postgres:12.5-alpine
+    image: postgres:14.2-alpine
     environment:
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: HCK6LrwUsVu63ZdF
@@ -38,6 +36,11 @@ services:
     ports:
       - "5436:5436" # HOST:CONTAINER
     command: -p 5436
+    volumes:
+      # Database volume
+      - ../data/postgres/pg_data:/var/lib/postgresql/data
+      # Temp volume to allow using dumps
+      - ../data/postgres/dumps:/tmp/
     networks:
       - trader
 
@@ -56,6 +59,15 @@ services:
     image: adminer
     ports:
       - "8338:8080"
+    networks:
+      - trader
+
+  trader-redis:
+    image: redis
+    volumes:
+      - ./data/redis/data:/data
+    ports:
+      - "6379:6379"
     networks:
       - trader
 
